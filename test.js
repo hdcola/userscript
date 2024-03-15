@@ -11,42 +11,73 @@
 
 (function () {
   "use strict";
-  createFloatingButton();
+  createContainer();
 })();
 
-function createFloatingButton() {
+function createContainer() {
+  let topContainer = document.createElement("div");
+  topContainer.style.position = "fixed";
+  topContainer.style.top = "25px";
+  topContainer.style.right = "100px";
+  topContainer.style.width = "300px";
+  // topContainer.style.height = "100%";
+  // topContainer.style.overflowY = "scroll";
+  topContainer.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+  topContainer.style.color = "white";
+  topContainer.style.padding = "10px";
+  topContainer.style.zIndex = "9999";
+
+  document.body.appendChild(topContainer);
+  createFloatingButton(topContainer);
+}
+
+function createFloatingButton(topContainer) {
+  // 创建一个输入框用于显示 slips 结果
+  let slipsResultInput = document.createElement("textarea");
+  slipsResultInput.setAttribute("readonly", true);
+  slipsResultInput.style.width = "100%";
+  slipsResultInput.style.height = "100px";
+  slipsResultInput.style.overflowY = "scroll";
+  slipsResultInput.style.backgroundColor = "transparent";
+  // slipsResultInput.style.border = "none";
+  slipsResultInput.style.color = "white";
+  slipsResultInput.style.padding = "5px";
+  slipsResultInput.style.marginBottom = "10px";
+
+  topContainer.appendChild(slipsResultInput);
+
   // Create floating button
   let getSlipButton = document.createElement("button");
   getSlipButton.innerHTML = "Get Slips";
-  getSlipButton.style.position = "fixed";
-  getSlipButton.style.top = "40px";
-  getSlipButton.style.right = "20px";
-  getSlipButton.style.zIndex = "9999";
+  // getSlipButton.style.position = "fixed";
+  // getSlipButton.style.top = "40px";
+  // getSlipButton.style.right = "20px";
+  // getSlipButton.style.zIndex = "9999";
   getSlipButton.style.borderRadius = "10%";
   getSlipButton.style.backgroundColor = "red";
 
   // add button to the body
-  document.body.appendChild(getSlipButton);
+  topContainer.appendChild(getSlipButton);
 
   // add event listener
   getSlipButton.addEventListener("click", function () {
-    // get slip info
-    let slipInfo = getSlipInfo();
-    console.log(slipInfo);
+    // get slip list
+    let slipList = getSlipList();
+    slipsResultInput.value = slipList.join("\n");
   });
 
   // Create another floating button
   let getSlipInfoButton = document.createElement("button");
   getSlipInfoButton.innerHTML = "Get Slip Info";
-  getSlipInfoButton.style.position = "fixed";
-  getSlipInfoButton.style.top = "80px";
-  getSlipInfoButton.style.right = "20px";
-  getSlipInfoButton.style.zIndex = "9999";
+  // getSlipInfoButton.style.position = "fixed";
+  // getSlipInfoButton.style.top = "80px";
+  // getSlipInfoButton.style.right = "20px";
+  // getSlipInfoButton.style.zIndex = "9999";
   getSlipInfoButton.style.borderRadius = "10%";
   getSlipInfoButton.style.backgroundColor = "blue";
 
   // add button to the body
-  document.body.appendChild(getSlipInfoButton);
+  topContainer.appendChild(getSlipInfoButton);
 
   // add event listener
   getSlipInfoButton.addEventListener("click", function () {
@@ -58,15 +89,15 @@ function createFloatingButton() {
   // Create another floating button
   let clickSlipButton = document.createElement("button");
   clickSlipButton.innerHTML = "Click a slip";
-  clickSlipButton.style.position = "fixed";
-  clickSlipButton.style.top = "120px";
-  clickSlipButton.style.right = "20px";
-  clickSlipButton.style.zIndex = "9999";
+  // clickSlipButton.style.position = "fixed";
+  // clickSlipButton.style.top = "120px";
+  // clickSlipButton.style.right = "20px";
+  // clickSlipButton.style.zIndex = "9999";
   clickSlipButton.style.borderRadius = "10%";
   clickSlipButton.style.backgroundColor = "green";
 
   // add button to the body
-  document.body.appendChild(clickSlipButton);
+  topContainer.appendChild(clickSlipButton);
 
   // add event listener
   clickSlipButton.addEventListener("click", function () {
@@ -90,11 +121,10 @@ function createFloatingButton() {
 //             src="/T1-2023/Content/images/Assets/remove.png">
 //     </p>
 // </div>
-function getSlipInfo() {
+function getSlipList() {
   // 创建一个空数组来存储 label 内容
   let labelsArray = [];
 
-  // 获取所有匹配的 div 元素
   let divElements = document.querySelectorAll("div.tocItemWrapper");
 
   // 遍历每个 div 元素
@@ -102,17 +132,18 @@ function getSlipInfo() {
     // 在当前 div 元素中查找 label 元素
     let labelElement = divElement.querySelector("label.tocLabel");
     if (labelElement) {
-      // 将 label 内容添加到数组中
-      labelsArray.push(labelElement.textContent.trim());
+      let labelText = labelElement.textContent.trim();
+      // 只有以 "T3" 或 "T5" 开头的内容才添加到数组中
+      if (labelText.startsWith("T3") || labelText.startsWith("T5")) {
+        labelsArray.push(labelText);
+      }
     }
   });
 
-  // 返回数组
   return labelsArray;
 }
 
 function clickSlip() {
-  // 获取所有匹配的 div 元素
   let divElements = document.querySelectorAll("div.tocItemWrapper");
 
   // 遍历每个 div 元素
