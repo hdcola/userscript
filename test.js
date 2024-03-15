@@ -34,40 +34,37 @@ function createFloatingButton(topContainer) {
   let slipsResultInput = document.createElement("textarea");
   slipsResultInput.setAttribute("readonly", false);
   slipsResultInput.style.width = "100%";
-  slipsResultInput.style.height = "100px";
+  slipsResultInput.style.height = "50px";
   slipsResultInput.style.overflowY = "scroll";
   slipsResultInput.style.backgroundColor = "transparent";
   slipsResultInput.style.color = "white";
   slipsResultInput.style.padding = "5px";
-  slipsResultInput.style.marginBottom = "10px";
+  // slipsResultInput.style.marginBottom = "2px";
 
   topContainer.appendChild(slipsResultInput);
 
-  // Create floating button
+  // Create get slips button
   let getSlipButton = document.createElement("button");
   getSlipButton.innerHTML = "Get Slips";
   getSlipButton.style.borderRadius = "10%";
-  getSlipButton.style.backgroundColor = "red";
+  getSlipButton.style.backgroundColor = "CornflowerBlue";
 
   // add button to the body
   topContainer.appendChild(getSlipButton);
 
   // add event listener
   getSlipButton.addEventListener("click", function () {
-    // get slip list
-    // let slipList = getSlipList();
-    // slipsResultInput.value = slipList.join("\n");
+    slipsResultInput.value = "";
     getSlipList(slipsResultInput).then((slipList) => {
-      // slipsResultInput.value = slipList.join("\n");
       console.log(slipList);
     });
   });
 
-  // Create another floating button
+  // Create get slip info button
   let getSlipInfoButton = document.createElement("button");
   getSlipInfoButton.innerHTML = "Get Slip Info";
   getSlipInfoButton.style.borderRadius = "10%";
-  getSlipInfoButton.style.backgroundColor = "blue";
+  getSlipInfoButton.style.backgroundColor = "CornflowerBlue";
 
   // add button to the body
   topContainer.appendChild(getSlipInfoButton);
@@ -75,8 +72,25 @@ function createFloatingButton(topContainer) {
   // add event listener
   getSlipInfoButton.addEventListener("click", function () {
     // get slip info
-    let slipInfo = getSlipInfo();
-    console.log(slipInfo);
+    getSlipInfo().then((slipInfo) => {
+      slipsResultInput.value = slipInfo.join("\n");
+      console.log(slipInfo);
+    });
+  });
+
+  // Create get slip info button
+  let setSerialNumber = document.createElement("button");
+  setSerialNumber.innerHTML = "Make Serial";
+  setSerialNumber.style.borderRadius = "10%";
+  setSerialNumber.style.backgroundColor = "CornflowerBlue";
+
+  // add button to the body
+  topContainer.appendChild(setSerialNumber);
+
+  // add event listener
+  setSerialNumber.addEventListener("click", function () {
+    // make serial number for each slip label
+    makeSerialNumber();
   });
 }
 
@@ -114,8 +128,8 @@ async function getSlipList(slipsResultInput) {
         labelElement.click();
         clickCount++;
 
-        // 使用 await 等待 1000 毫秒
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // 使用 await 等待 2000 毫秒
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         // get slip info
         let slipInfo = await getSlipInfo();
@@ -123,6 +137,27 @@ async function getSlipList(slipsResultInput) {
         // show and store the result
         slipsResultInput.value += clickCount + ": " + labelText + "\n";
         labelsArray.push(labelText);
+      }
+    }
+  }
+  return labelsArray;
+}
+
+function makeSerialNumber() {
+  let divElements = document.querySelectorAll("div.tocItemWrapper");
+  let count = 1;
+
+  // 遍历每个 div 元素
+  for (let divElement of divElements) {
+    // 在当前 div 元素中查找 label 元素
+    let labelElement = divElement.querySelector("label.tocLabel");
+    if (labelElement) {
+      let labelText = labelElement.textContent.trim();
+      // 只有以 "T3" 或 "T5" 开头的内容才添加到数组中
+      if (labelText.startsWith("T3") || labelText.startsWith("T5")) {
+        // add serial number to the label
+        labelElement.textContent = count + ": " + labelText;
+        count++;
       }
     }
   }
