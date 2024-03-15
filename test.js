@@ -20,8 +20,6 @@ function createContainer() {
   topContainer.style.top = "25px";
   topContainer.style.right = "100px";
   topContainer.style.width = "300px";
-  // topContainer.style.height = "100%";
-  // topContainer.style.overflowY = "scroll";
   topContainer.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
   topContainer.style.color = "white";
   topContainer.style.padding = "10px";
@@ -34,12 +32,11 @@ function createContainer() {
 function createFloatingButton(topContainer) {
   // 创建一个输入框用于显示 slips 结果
   let slipsResultInput = document.createElement("textarea");
-  slipsResultInput.setAttribute("readonly", true);
+  slipsResultInput.setAttribute("readonly", false);
   slipsResultInput.style.width = "100%";
   slipsResultInput.style.height = "100px";
   slipsResultInput.style.overflowY = "scroll";
   slipsResultInput.style.backgroundColor = "transparent";
-  // slipsResultInput.style.border = "none";
   slipsResultInput.style.color = "white";
   slipsResultInput.style.padding = "5px";
   slipsResultInput.style.marginBottom = "10px";
@@ -49,10 +46,6 @@ function createFloatingButton(topContainer) {
   // Create floating button
   let getSlipButton = document.createElement("button");
   getSlipButton.innerHTML = "Get Slips";
-  // getSlipButton.style.position = "fixed";
-  // getSlipButton.style.top = "40px";
-  // getSlipButton.style.right = "20px";
-  // getSlipButton.style.zIndex = "9999";
   getSlipButton.style.borderRadius = "10%";
   getSlipButton.style.backgroundColor = "red";
 
@@ -62,17 +55,17 @@ function createFloatingButton(topContainer) {
   // add event listener
   getSlipButton.addEventListener("click", function () {
     // get slip list
-    let slipList = getSlipList();
-    slipsResultInput.value = slipList.join("\n");
+    // let slipList = getSlipList();
+    // slipsResultInput.value = slipList.join("\n");
+    getSlipList(slipsResultInput).then((slipList) => {
+      // slipsResultInput.value = slipList.join("\n");
+      console.log(slipList);
+    });
   });
 
   // Create another floating button
   let getSlipInfoButton = document.createElement("button");
   getSlipInfoButton.innerHTML = "Get Slip Info";
-  // getSlipInfoButton.style.position = "fixed";
-  // getSlipInfoButton.style.top = "80px";
-  // getSlipInfoButton.style.right = "20px";
-  // getSlipInfoButton.style.zIndex = "9999";
   getSlipInfoButton.style.borderRadius = "10%";
   getSlipInfoButton.style.backgroundColor = "blue";
 
@@ -84,25 +77,6 @@ function createFloatingButton(topContainer) {
     // get slip info
     let slipInfo = getSlipInfo();
     console.log(slipInfo);
-  });
-
-  // Create another floating button
-  let clickSlipButton = document.createElement("button");
-  clickSlipButton.innerHTML = "Click a slip";
-  // clickSlipButton.style.position = "fixed";
-  // clickSlipButton.style.top = "120px";
-  // clickSlipButton.style.right = "20px";
-  // clickSlipButton.style.zIndex = "9999";
-  clickSlipButton.style.borderRadius = "10%";
-  clickSlipButton.style.backgroundColor = "green";
-
-  // add button to the body
-  topContainer.appendChild(clickSlipButton);
-
-  // add event listener
-  clickSlipButton.addEventListener("click", function () {
-    // call function to simulate clicking a slip
-    clickSlip();
   });
 }
 
@@ -121,49 +95,38 @@ function createFloatingButton(topContainer) {
 //             src="/T1-2023/Content/images/Assets/remove.png">
 //     </p>
 // </div>
-function getSlipList() {
+async function getSlipList(slipsResultInput) {
   // 创建一个空数组来存储 label 内容
   let labelsArray = [];
+  let clickCount = 0;
 
   let divElements = document.querySelectorAll("div.tocItemWrapper");
 
   // 遍历每个 div 元素
-  divElements.forEach(function (divElement) {
+  for (let divElement of divElements) {
     // 在当前 div 元素中查找 label 元素
     let labelElement = divElement.querySelector("label.tocLabel");
     if (labelElement) {
       let labelText = labelElement.textContent.trim();
       // 只有以 "T3" 或 "T5" 开头的内容才添加到数组中
       if (labelText.startsWith("T3") || labelText.startsWith("T5")) {
+        // click the label
+        labelElement.click();
+        clickCount++;
+
+        // 使用 await 等待 1000 毫秒
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // get slip info
+        let slipInfo = await getSlipInfo();
+        labelText += " " + slipInfo.join(" ");
+        // show and store the result
+        slipsResultInput.value += clickCount + ": " + labelText + "\n";
         labelsArray.push(labelText);
       }
     }
-  });
-
+  }
   return labelsArray;
-}
-
-function clickSlip() {
-  let divElements = document.querySelectorAll("div.tocItemWrapper");
-
-  // 遍历每个 div 元素
-  divElements.forEach(function (divElement) {
-    // 在当前 div 元素中查找 label 元素
-    let labelElement = divElement.querySelector("label.tocLabel");
-    if (labelElement) {
-      // 如果 label 内容匹配，则模拟点击
-      if (labelElement.textContent.trim() === "T3: CIBC MONEY MARKET FUND") {
-        divElement.click();
-        //wait for 1 second
-        setTimeout(function () {
-          // get slip info
-          let slipInfo = getSlipInfo();
-          console.log(slipInfo);
-        }, 1000);
-        return;
-      }
-    }
-  });
 }
 
 /* <fieldset _ngcontent-ofr-c40="" dt-focus="" class="RowStyleZebraOdd">
@@ -205,7 +168,7 @@ function clickSlip() {
     </div>
     <div _ngcontent-ofr-c40="" class="clear">&nbsp;</div>
 </fieldset> */
-function getSlipInfo() {
+async function getSlipInfo() {
   // 找到所有 fieldset 元素
   let fieldsets = document.querySelectorAll("fieldset");
 
@@ -213,7 +176,7 @@ function getSlipInfo() {
   let resultArray = [];
 
   // 遍历每个 fieldset 元素
-  fieldsets.forEach(function (fieldset) {
+  for (let fieldset of fieldsets) {
     // 找到当前 fieldset 中 id 为 "null" 的输入框
     let inputElement = fieldset.querySelector("input#null");
 
@@ -227,11 +190,7 @@ function getSlipInfo() {
         `${spanElement.textContent.trim()}: ${inputElement.value.trim()}`
       );
     }
-  });
+  }
 
   return resultArray;
-}
-
-function tryClickElement(tryElement) {
-  tryElement.click();
 }
