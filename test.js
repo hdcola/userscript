@@ -24,6 +24,7 @@ function createContainer() {
   topContainer.style.color = "white";
   topContainer.style.padding = "10px";
   topContainer.style.zIndex = "9999";
+  topContainer.style.fontSize = "0.7em";
 
   document.body.appendChild(topContainer);
   createFloatingButton(topContainer);
@@ -32,7 +33,7 @@ function createContainer() {
 function createFloatingButton(topContainer) {
   // 创建一个输入框用于显示 slips 结果
   let slipsResultInput = document.createElement("textarea");
-  slipsResultInput.setAttribute("readonly", false);
+  // slipsResultInput.setAttribute("readonly", false);
   slipsResultInput.style.width = "100%";
   slipsResultInput.style.height = "50px";
   slipsResultInput.style.overflowY = "scroll";
@@ -91,6 +92,22 @@ function createFloatingButton(topContainer) {
   setSerialNumber.addEventListener("click", function () {
     // make serial number for each slip label
     makeSerialNumber();
+  });
+
+  // Create merge slips button
+  let mergeButton = document.createElement("button");
+  mergeButton.innerHTML = "Sort Slips";
+  mergeButton.style.borderRadius = "10%";
+  mergeButton.style.backgroundColor = "CornflowerBlue";
+
+  // add button to the body
+  topContainer.appendChild(mergeButton);
+
+  // add event listener
+  mergeButton.addEventListener("click", function () {
+    // merge slips
+    let mergedLines = reSortLines(slipsResultInput.value);
+    slipsResultInput.value = mergedLines;
   });
 }
 
@@ -212,20 +229,64 @@ async function getSlipInfo() {
 
   // 遍历每个 fieldset 元素
   for (let fieldset of fieldsets) {
-    // 找到当前 fieldset 中 id 为 "null" 的输入框
-    let inputElement = fieldset.querySelector("input#null");
+    // 找到当前 fieldset 中所有的 id 为 "null" 的输入框和所有的 class 为 "boxNumberContent" 的 span 元素
+    let inputElements = fieldset.querySelectorAll("input#null");
+    let spanElements = fieldset.querySelectorAll("span.boxNumberContent");
 
-    // 找到当前 fieldset 中的 span 元素中 class 为 "boxNumberContent" 的元素
-    let spanElement = fieldset.querySelector("span.boxNumberContent");
+    // 遍历每对输入框和 span 元素
+    for (let i = 0; i < inputElements.length; i++) {
+      let inputElement = inputElements[i];
+      let spanElement = spanElements[i];
 
-    // 如果输入框不为空
-    if (inputElement && inputElement.value.trim() !== "" && spanElement) {
-      // 将输入框的值和 span 中的内容合并到一个字符串中，并添加到结果数组中
-      resultArray.push(
-        `${spanElement.textContent.trim()}: ${inputElement.value.trim()}`
-      );
+      // 如果输入框不为空
+      if (inputElement && inputElement.value.trim() !== "" && spanElement) {
+        // 将输入框的值和 span 中的内容合并到一个字符串中，并添加到结果数组中
+        resultArray.push(
+          `${spanElement.textContent.trim()}: ${inputElement.value.trim()}`
+        );
+      }
     }
   }
 
   return resultArray;
+}
+
+// Sorted by similar amounts available
+function reSortLines(inputString) {
+  let lines = inputString.split("\n");
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    let amounts = extractAmounts(line);
+    for (let j = i + 1; j < lines.length; j++) {
+      let nextLine = lines[j];
+      let nextAmounts = extractAmounts(nextLine);
+      let sameItemsCount = countCommonItems(amounts, nextAmounts);
+      if (sameItemsCount > 0) {
+        // move index j to index i + 1
+        let removedItem = lines.splice(j, 1)[0];
+        lines.splice(i + 1, 0, removedItem);
+        break;
+      }
+    }
+  }
+
+  return lines.join("\n");
+}
+
+function extractAmounts(line) {
+  let amounts = [];
+  let regex = /\d+:\s*\$\d+(?:,\d+)?(?:\.\d+)?/g;
+  let match;
+
+  while ((match = regex.exec(line)) !== null) {
+    amounts.push(match[0]);
+  }
+
+  return amounts;
+}
+
+function countCommonItems(arr1, arr2) {
+  let commonItems = arr1.filter((item) => arr2.includes(item));
+  return commonItems.length;
 }
